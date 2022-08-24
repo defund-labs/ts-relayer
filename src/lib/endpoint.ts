@@ -143,7 +143,7 @@ export class Endpoint {
   }: QueryOpts = {}): Promise<Interquery[]> {
     const pendingIqs = await this.client.query.ibc.interquery.interqueries.allInterqueries()
 
-    return pendingIqs.interquery
+    return pendingIqs
   }
 
   // returns all acks (auto-paginates, so be careful about not setting a minHeight)

@@ -79,6 +79,8 @@ import {
 import {
   MsgCreateInterqueryResult
 } from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/tx'
+import { Endpoint } from './endpoint';
+import { Interquery } from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/interquery';
 
 function deepCloneAndMutate<T extends Record<string, unknown>>(
   object: T,
@@ -1222,6 +1224,67 @@ export class IbcClient {
           if (mutableMsg.value.packet?.data) {
             mutableMsg.value.packet.data = toBase64AsAny(
               mutableMsg.value.packet.data
+            );
+          }
+        })
+      ),
+    });
+    const result = await this.sign.signAndBroadcast(
+      senderAddress,
+      msgs,
+      'auto'
+    );
+    if (isDeliverTxFailure(result)) {
+      throw new Error(createDeliverTxFailureMessage(result));
+    }
+    const parsedLogs = logs.parseRawLog(result.rawLog);
+    return {
+      logs: parsedLogs,
+      transactionHash: result.transactionHash,
+      height: result.height,
+    };
+  }
+
+  public async submitInterqueries(
+    iqs: readonly Interquery[],
+    dest: Endpoint,
+  ): Promise<MsgResult> {
+    this.logger.verbose(`Submitting ${iqs.length} interqueries..`);
+    if (iqs.length === 0) {
+      throw new Error('Must submit at least 1 interquery');
+    }
+
+    const senderAddress = this.senderAddress;
+    const msgs = [];
+    for (const i in iqs) {
+      const iq = iqs[i];
+      this.logger.verbose(
+        `Submitting interquery ${iq.storeid} from ${this.chainId}:${
+          iq.connectionId
+        }`
+      );
+
+      // perform abci query for interquery
+      const res = await dest.client.query.queryRawProof(iq.path, iq.key);
+
+      const msg = {
+        typeUrl: '/defundhub.defund.query.MsgCreateInterqueryResult',
+        value: MsgCreateInterqueryResult.fromPartial({
+          creator: senderAddress,
+          storeid: iq.storeid,
+          data: res.value,
+          height: res.height,
+          proof: res.proof,
+        }),
+      };
+      msgs.push(msg);
+    }
+    this.logger.debug('MsgCreateInterqueryResult(s)', {
+      msgs: msgs.map((msg) =>
+        deepCloneAndMutate(msg, (mutableMsg) => {
+          if (mutableMsg.value.data) {
+            mutableMsg.value.data = toBase64AsAny(
+              mutableMsg.value.data
             );
           }
         })

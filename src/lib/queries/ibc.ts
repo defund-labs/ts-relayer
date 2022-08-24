@@ -56,6 +56,8 @@ import {
   QueryAllInterqueryResponse,
 } from '../../generated/defund-labs/defund/defundhub.defund.query/module/types/query/query';
 
+import { Interquery } from '../../generated/defund-labs/defund/defundhub.defund.query/module/types/query/interquery';
+
 function decodeTendermintClientStateAny(
   clientState: Any | undefined
 ): TendermintClientState {
@@ -255,7 +257,7 @@ export interface IbcExtension {
     };
     readonly interquery: {
       readonly interqueries : {
-        readonly allInterqueries: () => Promise<QueryAllInterqueryResponse>;
+        readonly allInterqueries: () => Promise<Interquery[]>;
       }
     };
   };
@@ -778,9 +780,7 @@ export function setupIbcExtension(base: QueryClient): IbcExtension {
               iqs.push(...response.interquery);
               key = response.pagination?.next_key;
             } while (key && key.length);
-            return QueryAllInterqueryResponse.fromJSON({
-              iqs,
-            });
+            return iqs;
           }
         },
       },
