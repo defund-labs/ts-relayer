@@ -367,13 +367,13 @@ export class Link {
         source
       )} >= height ${minHeight}`
     );
-    const { src, dest } = this.getEnds(source);
-    const client = await dest.client.query.ibc.client.stateTm(dest.clientID);
+    const { src } = this.getEnds(source);
+    //const client = await dest.client.query.ibc.client.stateTm(dest.clientID);
     // TODO: revisit where revision number comes from - this must be the number from the source chain
-    const knownHeight = client.latestHeight?.revisionHeight?.toNumber() ?? 0;
-    if (knownHeight >= minHeight && client.latestHeight !== undefined) {
-      return client.latestHeight;
-    }
+    //const knownHeight = client.latestHeight?.revisionHeight?.toNumber() ?? 0;
+    //if (knownHeight >= minHeight && client.latestHeight !== undefined) {
+    //  return client.latestHeight;
+    //}
 
     const curHeight = (await src.client.latestHeader()).height;
     if (curHeight < minHeight) {
@@ -536,7 +536,7 @@ export class Link {
     await Promise.all([
       this.relayPackets('A', submitA),
       this.relayPackets('B', submitB),
-      this.relayInterqueries('A', iqs),
+      this.relayInterqueries('A', 'B', iqs),
     ]);
 
     // let's wait a bit to ensure our newly committed acks are indexed
@@ -757,6 +757,7 @@ export class Link {
   // Returns all the queries that are associated with the just submitted interqueries
   public async relayInterqueries(
     source: Side,
+    sourceB: Side,
     iqs: readonly Interquery[]
   ): Promise<AckWithMetadata[]> {
     this.logger.info(
@@ -772,8 +773,9 @@ export class Link {
     const { src, dest } = this.getEnds(source);
 
     const dstcurHeight = (await dest.client.latestHeader()).height;
+    const srccurHeight = (await src.client.latestHeader()).height;
     await this.updateClientToHeight(source, dstcurHeight);
-    await src.client.doUpdateClient(src.clientID, dest.client, src.client)
+    await this.updateClientToHeight(sourceB, srccurHeight);
 
     const { logs, height } = await src.client.submitInterqueries(
       iqs,

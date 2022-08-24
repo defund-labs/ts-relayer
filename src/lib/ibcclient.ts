@@ -370,6 +370,7 @@ export class IbcClient {
       ...rpcHeader,
       version: {
         block: Long.fromNumber(rpcHeader.version.block),
+        app: Long.fromNumber(rpcHeader.version.app),
       },
       height: Long.fromNumber(rpcHeader.height),
       time: timestampFromDateNanos(rpcHeader.time),
@@ -719,6 +720,9 @@ export class IbcClient {
         },
       }),
     };
+
+    console.log(header.signedHeader?.commit?.blockId?.hash)
+    console.log(header.signedHeader?.header)
 
     this.logger.debug(
       `MsgUpdateClient`,
