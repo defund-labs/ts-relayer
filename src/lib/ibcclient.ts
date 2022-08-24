@@ -721,9 +721,6 @@ export class IbcClient {
       }),
     };
 
-    console.log(header.signedHeader?.commit?.blockId?.hash)
-    console.log(header.signedHeader?.header)
-
     this.logger.debug(
       `MsgUpdateClient`,
       deepCloneAndMutate(updateMsg, (mutableMsg) => {
