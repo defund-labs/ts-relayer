@@ -76,6 +76,10 @@ import {
   toIntHeight,
 } from './utils';
 
+import {
+  MsgCreateInterqueryResult
+} from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/tx'
+
 function deepCloneAndMutate<T extends Record<string, unknown>>(
   object: T,
   mutateFn: (deepClonedObject: T) => void
@@ -129,6 +133,7 @@ function ibcRegistry(): Registry {
     ['/ibc.core.channel.v1.MsgAcknowledgement', MsgAcknowledgement],
     ['/ibc.core.channel.v1.MsgTimeout', MsgTimeout],
     ['/ibc.applications.transfer.v1.MsgTransfer', MsgTransfer],
+    ['/defundhub.defund.query.MsgCreateInterqueryResult', MsgCreateInterqueryResult],
   ]);
 }
 

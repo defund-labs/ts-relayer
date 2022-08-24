@@ -498,12 +498,13 @@ export class Link {
     timedoutThresholdSeconds = 0
   ): Promise<{ heights: RelayedHeights; info: RelayInfo }> {
     // FIXME: is there a cleaner way to get the height we query at?
-    const [packetHeightA, packetHeightB, packetsA, packetsB] =
+    const [packetHeightA, packetHeightB, packetsA, packetsB, iqs] =
       await Promise.all([
         this.endA.client.currentHeight(),
         this.endB.client.currentHeight(),
         this.getPendingPackets('A', { minHeight: relayFrom.packetHeightA }),
         this.getPendingPackets('B', { minHeight: relayFrom.packetHeightB }),
+        this.getPendingInterqueries('A', { minHeight: relayFrom.packetHeightA }),
       ]);
 
     const cutoffHeightA = await this.endB.client.timeoutHeight(
@@ -621,6 +622,18 @@ export class Link {
     return valid.filter((x) => x !== undefined) as PacketWithMetadata[];
   }
 
+  public async getPendingInterqueries(
+    source: Side,
+    opts: QueryOpts = {}
+  ) {
+    this.logger.verbose(`Get pending interqueries on ${this.chain(source)}`);
+    const { src, dest } = this.getEnds(source);
+
+    src.queryInterqueries()
+
+    src.client.query.bank
+  }
+
   public async getPendingAcks(
     source: Side,
     opts: QueryOpts = {}
@@ -706,6 +719,41 @@ export class Link {
   //
   // Returns all the acks that are associated with the just submitted packets
   public async relayPackets(
+    source: Side,
+    packets: readonly PacketWithMetadata[]
+  ): Promise<AckWithMetadata[]> {
+    this.logger.info(
+      `Relay ${packets.length} packets from ${this.chain(
+        source
+      )} => ${this.otherChain(source)}`
+    );
+    if (packets.length === 0) {
+      return [];
+    }
+    const { src, dest } = this.getEnds(source);
+
+    // check if we need to update client at all
+    const neededHeight = Math.max(...packets.map((x) => x.height)) + 1;
+    const headerHeight = await this.updateClientToHeight(source, neededHeight);
+
+    const submit = packets.map(({ packet }) => packet);
+    const proofs = await Promise.all(
+      submit.map((packet) => src.client.getPacketProof(packet, headerHeight))
+    );
+    const { logs, height } = await dest.client.receivePackets(
+      submit,
+      proofs,
+      headerHeight
+    );
+    const acks = parseAcksFromLogs(logs);
+    return acks.map((ack) => ({ height, ...ack }));
+  }
+
+  // this will update the client if needed and relay all provided interqueries from src -> dest
+  // if packets are all older than the last consensusHeight, then we don't update the client.
+  //
+  // Returns all the queries that are associated with the just submitted interqueries
+  public async relayInterqueries(
     source: Side,
     packets: readonly PacketWithMetadata[]
   ): Promise<AckWithMetadata[]> {

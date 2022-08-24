@@ -2,6 +2,7 @@ import { toHex } from '@cosmjs/encoding';
 import { logs } from '@cosmjs/stargate';
 import { tendermint34 } from '@cosmjs/tendermint-rpc';
 import { Packet } from 'cosmjs-types/ibc/core/channel/v1/channel';
+import { QueryClientImpl } from "../generated/defund-labs/defund/defundhub.defund.query/module/types/query/query";
 
 import { IbcClient } from './ibcclient';
 import {
@@ -136,6 +137,15 @@ export class Endpoint {
     return ([] as PacketWithMetadata[])
       .concat(...txsPackets)
       .concat(...eventsPackets);
+  }
+
+  public async queryInterqueries({
+  }: QueryOpts = {}) {
+    const pendingIqs = await this.client.query.ibc.interquery.interqueries.allInterqueries()
+
+    for (const iq of pendingIqs.interquery) {
+      console.log(iq)
+    }
   }
 
   // returns all acks (auto-paginates, so be careful about not setting a minHeight)

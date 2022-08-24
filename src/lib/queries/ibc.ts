@@ -50,6 +50,12 @@ import {
 } from 'cosmjs-types/ibc/lightclients/tendermint/v1/tendermint';
 import { ProofOps } from 'cosmjs-types/tendermint/crypto/proof';
 import Long from 'long';
+import { PageRequest } from '../../generated/cosmos/cosmos-sdk/cosmos.base.tendermint.v1beta1/module/types/cosmos/base/query/v1beta1/pagination';
+import { 
+  QueryClientImpl as InterqueryQuery,
+  QueryAllInterqueryRequest,
+  QueryAllInterqueryResponse,
+} from '../../generated/defund-labs/defund/defundhub.defund.query/module/types/query/query';
 
 function decodeTendermintClientStateAny(
   clientState: Any | undefined
@@ -248,6 +254,11 @@ export interface IbcExtension {
         ) => Promise<QueryConnectionResponse>;
       };
     };
+    readonly interquery: {
+      readonly interqueries : {
+        readonly allInterqueries: () => Promise<QueryAllInterqueryResponse>;
+      }
+    };
   };
 }
 
@@ -258,6 +269,7 @@ export function setupIbcExtension(base: QueryClient): IbcExtension {
   const channelQueryService = new ChannelQuery(rpc);
   const clientQueryService = new ClientQuery(rpc);
   const connectionQueryService = new ConnectionQuery(rpc);
+  const interqueryQueryService = new InterqueryQuery(rpc);
 
   return {
     ibc: {
@@ -750,6 +762,27 @@ export function setupIbcExtension(base: QueryClient): IbcExtension {
               proofHeight,
             };
           },
+        },
+      },
+      interquery: {
+        interqueries: {
+          allInterqueries: async () => {
+            const iqs = [];
+            let response: QueryAllInterqueryResponse;
+            let key: Uint8Array | undefined;
+            do {
+              response = await interqueryQueryService.InterqueryAll({
+                pagination: PageRequest.fromPartial({
+                  key: key
+                }),
+              });
+              iqs.push(...response.interquery);
+              key = response.pagination?.next_key;
+            } while (key && key.length);
+            return QueryAllInterqueryResponse.fromJSON({
+              iqs,
+            });
+          }
         },
       },
     },
