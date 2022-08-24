@@ -309,7 +309,7 @@ export class Link {
   public async updateClient(sender: Side): Promise<Height> {
     this.logger.info(`Update Client on ${this.otherChain(sender)}`);
     const { src, dest } = this.getEnds(sender);
-    const height = await dest.client.doUpdateClient(dest.clientID, src.client);
+    const height = await dest.client.doUpdateClient(dest.clientID, src.client, dest.client);
     return height;
   }
 
@@ -760,22 +760,25 @@ export class Link {
     iqs: readonly Interquery[]
   ): Promise<AckWithMetadata[]> {
     this.logger.info(
-      `Relay ${iqs.length} interqueries from ${this.chain(
+      `Relay ${iqs.length} interqueries for ${this.chain(
         source
-      )} => ${this.otherChain(source)}`
+      )} from ${this.otherChain(source)} => ${this.chain(
+        source
+      )}`
     );
     if (iqs.length === 0) {
       return [];
     }
     const { src, dest } = this.getEnds(source);
 
-    // check if we need to update client at all
-    const neededHeight = Math.max(...iqs.map((x) => x.timeoutHeight - 50)) + 1;
-    const headerHeight = await this.updateClientToHeight(source, neededHeight);
+    const dstcurHeight = (await dest.client.latestHeader()).height;
+    await this.updateClientToHeight(source, dstcurHeight);
+    await src.client.doUpdateClient(src.clientID, dest.client, src.client)
 
     const { logs, height } = await src.client.submitInterqueries(
       iqs,
       dest,
+      dstcurHeight,
     );
     const acks = parseAcksFromLogs(logs);
     return acks.map((ack) => ({ height, ...ack }));

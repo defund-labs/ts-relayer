@@ -440,8 +440,8 @@ export class IbcClient {
   //
   // For the vote sign bytes, it checks (from the commit):
   //   Height, Round, BlockId, TimeStamp, ChainID
-  public async buildHeader(lastHeight: number): Promise<TendermintHeader> {
-    const signedHeader = await this.getSignedHeader();
+  public async buildHeader(lastHeight: number, source: IbcClient): Promise<TendermintHeader> {
+    const signedHeader = await source.getSignedHeader();
     // "assert that trustedVals is NextValidators of last trusted header"
     // https://github.com/cosmos/cosmos-sdk/blob/v0.41.0/x/ibc/light-clients/07-tendermint/types/update.go#L74
     const validatorHeight = lastHeight + 1;
@@ -449,9 +449,9 @@ export class IbcClient {
     const curHeight = signedHeader.header!.height.toNumber();
     return TendermintHeader.fromPartial({
       signedHeader,
-      validatorSet: await this.getValidatorSet(curHeight),
-      trustedHeight: this.revisionHeight(lastHeight),
-      trustedValidators: await this.getValidatorSet(validatorHeight),
+      validatorSet: await source.getValidatorSet(curHeight),
+      trustedHeight: source.revisionHeight(lastHeight),
+      trustedValidators: await source.getValidatorSet(validatorHeight),
     });
   }
 
@@ -592,13 +592,14 @@ export class IbcClient {
   // Returns the height that was updated to.
   public async doUpdateClient(
     clientId: string,
-    src: IbcClient
+    src: IbcClient,
+    dest: IbcClient,
   ): Promise<Height> {
-    const { latestHeight } = await this.query.ibc.client.stateTm(clientId);
-    const header = await src.buildHeader(toIntHeight(latestHeight));
-    await this.updateTendermintClient(clientId, header);
+    const { latestHeight } = await dest.query.ibc.client.stateTm(clientId);
+    const header = await src.buildHeader(toIntHeight(latestHeight), src);
+    await dest.updateTendermintClient(clientId, header);
     const height = header.signedHeader?.header?.height?.toNumber() ?? 0;
-    return src.revisionHeight(height);
+    return dest.revisionHeight(height);
   }
 
   /***** These are all direct wrappers around message constructors ********/
@@ -1248,6 +1249,7 @@ export class IbcClient {
   public async submitInterqueries(
     iqs: readonly Interquery[],
     dest: Endpoint,
+    height: number,
   ): Promise<MsgResult> {
     this.logger.verbose(`Submitting ${iqs.length} interqueries..`);
     if (iqs.length === 0) {
@@ -1265,7 +1267,14 @@ export class IbcClient {
       );
 
       // perform abci query for interquery
-      const res = await dest.client.query.queryRawProof(iq.path, iq.key);
+      const res = await dest.client.tm.abciQuery({
+        path: iq.path,
+        data: iq.key,
+        height: height,
+        prove: true
+      })
+
+      const proofRes = dest.client.query.queryRawProof(iq.path.split("/")[2], iq.key, height)
 
       const msg = {
         typeUrl: '/defundhub.defund.query.MsgCreateInterqueryResult',
@@ -1274,7 +1283,7 @@ export class IbcClient {
           storeid: iq.storeid,
           data: res.value,
           height: res.height,
-          proof: res.proof,
+          proof: (await proofRes).proof,
         }),
       };
       msgs.push(msg);
@@ -1540,7 +1549,7 @@ export async function prepareConnectionHandshake(
   // ensure the last transaction was committed to the header (one block after it was included)
   await src.waitOneBlock();
   // update client on dest
-  const headerHeight = await dest.doUpdateClient(clientIdDest, src);
+  const headerHeight = await dest.doUpdateClient(clientIdDest, src, dest);
 
   // get a proof (for the proven height)
   const proof = await src.getConnectionProof(
@@ -1561,7 +1570,7 @@ export async function prepareChannelHandshake(
   // ensure the last transaction was committed to the header (one block after it was included)
   await src.waitOneBlock();
   // update client on dest
-  const headerHeight = await dest.doUpdateClient(clientIdDest, src);
+  const headerHeight = await dest.doUpdateClient(clientIdDest, src, dest);
   // get a proof (for the proven height)
   const proof = await src.getChannelProof({ portId, channelId }, headerHeight);
   return proof;

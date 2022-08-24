@@ -83,7 +83,7 @@ test.serial('submit multiple tx, query all packets', async (t) => {
 
   // relay 2 packets to the other side
   await nodeA.waitOneBlock();
-  const headerHeight = await nodeB.doUpdateClient(link.endB.clientID, nodeA);
+  const headerHeight = await nodeB.doUpdateClient(link.endB.clientID, nodeA, nodeB);
   const sendPackets = packets3.map(({ packet }) => packet);
   const proofs = await Promise.all(
     sendPackets.map((packet) => nodeA.getPacketProof(packet, headerHeight))
