@@ -53,7 +53,6 @@ import Long from 'long';
 import { PageRequest } from '../../generated/cosmos/cosmos-sdk/cosmos.base.tendermint.v1beta1/module/types/cosmos/base/query/v1beta1/pagination';
 import { 
   QueryClientImpl as InterqueryQuery,
-  QueryAllInterqueryRequest,
   QueryAllInterqueryResponse,
 } from '../../generated/defund-labs/defund/defundhub.defund.query/module/types/query/query';
 

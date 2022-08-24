@@ -2,8 +2,8 @@
 import { Timestamp } from "../../google/protobuf/timestamp";
 import * as Long from "long";
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
-import { Vote, LightBlock } from "./types";
-import { Validator } from "./validator";
+import { Vote, LightBlock } from "../../tendermint/types/types";
+import { Validator } from "../../tendermint/types/validator";
 
 export const protobufPackage = "tendermint.types";
 
@@ -605,7 +605,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

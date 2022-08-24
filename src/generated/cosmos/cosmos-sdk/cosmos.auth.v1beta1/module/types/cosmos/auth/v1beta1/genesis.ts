@@ -1,5 +1,5 @@
 /* eslint-disable */
-import { Params } from "./auth";
+import { Params } from "../../../cosmos/auth/v1beta1/auth";
 import { Any } from "../../../google/protobuf/any";
 import { Writer, Reader } from "protobufjs/minimal";
 

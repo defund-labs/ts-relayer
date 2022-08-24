@@ -4,6 +4,11 @@ import { util, configure, Writer, Reader } from "protobufjs/minimal";
 
 export const protobufPackage = "cosmos.base.query.v1beta1";
 
+if (true) {
+  util.Long = Long as any;
+  configure();
+}
+
 /**
  * PageRequest is to be embedded in gRPC request messages for efficient
  * pagination. Ex:
@@ -320,9 +325,4 @@ function longToNumber(long: Long): number {
     throw new globalThis.Error("Value is larger than Number.MAX_SAFE_INTEGER");
   }
   return long.toNumber();
-}
-
-if (util.Long !== Long) {
-  util.Long = Long as any;
-  configure();
 }

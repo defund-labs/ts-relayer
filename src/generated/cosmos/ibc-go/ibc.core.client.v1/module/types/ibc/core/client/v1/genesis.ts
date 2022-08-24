@@ -5,7 +5,7 @@ import {
   IdentifiedClientState,
   ClientConsensusStates,
   Params,
-} from "./client";
+} from "../../../../ibc/core/client/v1/client";
 
 export const protobufPackage = "ibc.core.client.v1";
 
@@ -475,7 +475,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

@@ -2,7 +2,7 @@
 import {
   DenomTrace,
   Params,
-} from "./transfer";
+} from "../../../../ibc/applications/transfer/v1/transfer";
 import { Writer, Reader } from "protobufjs/minimal";
 
 export const protobufPackage = "ibc.applications.transfer.v1";

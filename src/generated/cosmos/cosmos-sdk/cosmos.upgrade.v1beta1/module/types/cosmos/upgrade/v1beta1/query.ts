@@ -1,7 +1,7 @@
 /* eslint-disable */
 import { Reader, util, configure, Writer } from "protobufjs/minimal";
 import * as Long from "long";
-import { Plan, ModuleVersion } from "./upgrade";
+import { Plan, ModuleVersion } from "../../../cosmos/upgrade/v1beta1/upgrade";
 
 export const protobufPackage = "cosmos.upgrade.v1beta1";
 
@@ -800,7 +800,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

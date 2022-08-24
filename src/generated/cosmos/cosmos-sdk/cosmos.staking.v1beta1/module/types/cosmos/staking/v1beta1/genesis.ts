@@ -7,7 +7,7 @@ import {
   Delegation,
   UnbondingDelegation,
   Redelegation,
-} from "./staking";
+} from "../../../cosmos/staking/v1beta1/staking";
 
 export const protobufPackage = "cosmos.staking.v1beta1";
 
@@ -417,7 +417,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

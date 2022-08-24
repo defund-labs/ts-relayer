@@ -3,7 +3,7 @@ import {
   Interquery,
   InterqueryResult,
   InterqueryTimeoutResult,
-} from "./interquery";
+} from "../query/interquery";
 import { Writer, Reader } from "protobufjs/minimal";
 
 export const protobufPackage = "defundhub.defund.query";

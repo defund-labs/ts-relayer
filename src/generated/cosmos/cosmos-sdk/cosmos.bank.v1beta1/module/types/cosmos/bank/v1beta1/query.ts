@@ -1,11 +1,11 @@
 /* eslint-disable */
 import { Reader, Writer } from "protobufjs/minimal";
-import { Coin } from "../../base/v1beta1/coin";
+import { Coin } from "../../../cosmos/base/v1beta1/coin";
 import {
   PageRequest,
   PageResponse,
-} from "../../base/query/v1beta1/pagination";
-import { Params, Metadata } from "./bank";
+} from "../../../cosmos/base/query/v1beta1/pagination";
+import { Params, Metadata } from "../../../cosmos/bank/v1beta1/bank";
 
 export const protobufPackage = "cosmos.bank.v1beta1";
 

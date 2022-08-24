@@ -1,0 +1,22 @@
+diff --git a/node_modules/protobufjs/src/util/longbits.js b/node_modules/protobufjs/src/util/longbits.js
+index 11bfb1c..4b1c706 100644
+--- a/node_modules/protobufjs/src/util/longbits.js
++++ b/node_modules/protobufjs/src/util/longbits.js
+@@ -3,6 +3,8 @@ module.exports = LongBits;
+ 
+ var util = require("../util/minimal");
+ 
++const long = require("long")
++
+ /**
+  * Constructs new long bits.
+  * @classdesc Helper class for working with the low and high bits of a 64 bit value.
+@@ -113,7 +115,7 @@ LongBits.prototype.toNumber = function toNumber(unsigned) {
+  */
+ LongBits.prototype.toLong = function toLong(unsigned) {
+     return util.Long
+-        ? new util.Long(this.lo | 0, this.hi | 0, Boolean(unsigned))
++        ? new long(this.lo | 0, this.hi | 0, Boolean(unsigned))
+         /* istanbul ignore next */
+         : { low: this.lo | 0, high: this.hi | 0, unsigned: Boolean(unsigned) };
+ };

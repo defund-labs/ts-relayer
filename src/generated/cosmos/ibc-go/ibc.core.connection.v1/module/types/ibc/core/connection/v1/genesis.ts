@@ -5,7 +5,7 @@ import {
   IdentifiedConnection,
   ConnectionPaths,
   Params,
-} from "./connection";
+} from "../../../../ibc/core/connection/v1/connection";
 
 export const protobufPackage = "ibc.core.connection.v1";
 
@@ -192,7 +192,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

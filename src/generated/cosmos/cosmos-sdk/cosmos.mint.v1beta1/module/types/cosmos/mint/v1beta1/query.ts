@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Reader, Writer } from "protobufjs/minimal";
-import { Params } from "./mint";
+import { Params } from "../../../cosmos/mint/v1beta1/mint";
 
 export const protobufPackage = "cosmos.mint.v1beta1";
 

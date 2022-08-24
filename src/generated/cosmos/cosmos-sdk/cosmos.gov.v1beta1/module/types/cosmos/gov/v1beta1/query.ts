@@ -10,13 +10,13 @@ import {
   TallyResult,
   proposalStatusFromJSON,
   proposalStatusToJSON,
-} from "./gov";
+} from "../../../cosmos/gov/v1beta1/gov";
 import { Reader, util, configure, Writer } from "protobufjs/minimal";
 import * as Long from "long";
 import {
   PageRequest,
   PageResponse,
-} from "../../base/query/v1beta1/pagination";
+} from "../../../cosmos/base/query/v1beta1/pagination";
 
 export const protobufPackage = "cosmos.gov.v1beta1";
 
@@ -1542,7 +1542,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

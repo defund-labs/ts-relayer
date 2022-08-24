@@ -4,7 +4,7 @@ import {
   Interquery,
   InterqueryResult,
   InterqueryTimeoutResult,
-} from "./interquery";
+} from "../query/interquery";
 import {
   PageRequest,
   PageResponse,

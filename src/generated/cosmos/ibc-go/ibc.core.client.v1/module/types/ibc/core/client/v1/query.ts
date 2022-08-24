@@ -7,7 +7,7 @@ import {
   IdentifiedClientState,
   ConsensusStateWithHeight,
   Params,
-} from "./client";
+} from "../../../../ibc/core/client/v1/client";
 import {
   PageRequest,
   PageResponse,
@@ -1735,7 +1735,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

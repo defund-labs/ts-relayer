@@ -2,14 +2,14 @@
 import { Reader, util, configure, Writer } from "protobufjs/minimal";
 import { Timestamp } from "../../google/protobuf/timestamp";
 import * as Long from "long";
-import { Header } from "../types/types";
-import { ProofOps } from "../crypto/proof";
+import { Header } from "../../tendermint/types/types";
+import { ProofOps } from "../../tendermint/crypto/proof";
 import {
   EvidenceParams,
   ValidatorParams,
   VersionParams,
-} from "../types/params";
-import { PublicKey } from "../crypto/keys";
+} from "../../tendermint/types/params";
+import { PublicKey } from "../../tendermint/crypto/keys";
 
 export const protobufPackage = "tendermint.abci";
 
@@ -5650,7 +5650,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

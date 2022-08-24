@@ -1,6 +1,7 @@
 import { arrayContentEquals } from '@cosmjs/utils';
 import { Order, Packet, State } from 'cosmjs-types/ibc/core/channel/v1/channel';
 import { Height } from 'cosmjs-types/ibc/core/client/v1/client';
+import { Interquery } from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/interquery';
 
 import {
   AckWithMetadata,
@@ -507,6 +508,8 @@ export class Link {
         this.getPendingInterqueries('A', { minHeight: relayFrom.packetHeightA }),
       ]);
 
+      console.log(iqs)
+
     const cutoffHeightA = await this.endB.client.timeoutHeight(
       timedoutThresholdBlocks
     );
@@ -624,14 +627,14 @@ export class Link {
 
   public async getPendingInterqueries(
     source: Side,
-    opts: QueryOpts = {}
-  ) {
+    _opts: QueryOpts = {}
+  ): Promise<Interquery[]> {
     this.logger.verbose(`Get pending interqueries on ${this.chain(source)}`);
-    const { src, dest } = this.getEnds(source);
+    const { src } = this.getEnds(source);
 
-    src.queryInterqueries()
+    const iqs = await src.queryInterqueries()
 
-    src.client.query.bank
+    return iqs
   }
 
   public async getPendingAcks(
@@ -755,23 +758,23 @@ export class Link {
   // Returns all the queries that are associated with the just submitted interqueries
   public async relayInterqueries(
     source: Side,
-    packets: readonly PacketWithMetadata[]
+    iqs: readonly PacketWithMetadata[]
   ): Promise<AckWithMetadata[]> {
     this.logger.info(
-      `Relay ${packets.length} packets from ${this.chain(
+      `Relay ${iqs.length} packets from ${this.chain(
         source
       )} => ${this.otherChain(source)}`
     );
-    if (packets.length === 0) {
+    if (iqs.length === 0) {
       return [];
     }
     const { src, dest } = this.getEnds(source);
 
     // check if we need to update client at all
-    const neededHeight = Math.max(...packets.map((x) => x.height)) + 1;
+    const neededHeight = Math.max(...iqs.map((x) => x.height)) + 1;
     const headerHeight = await this.updateClientToHeight(source, neededHeight);
 
-    const submit = packets.map(({ packet }) => packet);
+    const submit = iqs.map(({ packet }) => packet);
     const proofs = await Promise.all(
       submit.map((packet) => src.client.getPacketProof(packet, headerHeight))
     );

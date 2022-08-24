@@ -3,12 +3,12 @@ import {
   SignMode,
   signModeFromJSON,
   signModeToJSON,
-} from "../signing/v1beta1/signing";
+} from "../../../cosmos/tx/signing/v1beta1/signing";
 import * as Long from "long";
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import { Any } from "../../../google/protobuf/any";
-import { CompactBitArray } from "../../crypto/multisig/v1beta1/multisig";
-import { Coin } from "../../base/v1beta1/coin";
+import { CompactBitArray } from "../../../cosmos/crypto/multisig/v1beta1/multisig";
+import { Coin } from "../../../cosmos/base/v1beta1/coin";
 
 export const protobufPackage = "cosmos.tx.v1beta1";
 
@@ -1268,7 +1268,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

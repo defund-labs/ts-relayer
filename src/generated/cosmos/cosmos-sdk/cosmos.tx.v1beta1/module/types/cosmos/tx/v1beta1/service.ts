@@ -4,13 +4,13 @@ import * as Long from "long";
 import {
   PageRequest,
   PageResponse,
-} from "../../base/query/v1beta1/pagination";
-import { Tx } from "./tx";
+} from "../../../cosmos/base/query/v1beta1/pagination";
+import { Tx } from "../../../cosmos/tx/v1beta1/tx";
 import {
   TxResponse,
   GasInfo,
   Result,
-} from "../../base/abci/v1beta1/abci";
+} from "../../../cosmos/base/abci/v1beta1/abci";
 import { BlockID } from "../../../tendermint/types/types";
 import { Block } from "../../../tendermint/types/block";
 
@@ -1224,7 +1224,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Reader, Writer } from "protobufjs/minimal";
-import { Params } from "./host";
+import { Params } from "../../../../../ibc/applications/interchain_accounts/host/v1/host";
 
 export const protobufPackage = "ibc.applications.interchain_accounts.host.v1";
 

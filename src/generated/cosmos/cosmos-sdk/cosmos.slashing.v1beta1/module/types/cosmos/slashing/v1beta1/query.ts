@@ -3,11 +3,11 @@ import { Reader, Writer } from "protobufjs/minimal";
 import {
   Params,
   ValidatorSigningInfo,
-} from "./slashing";
+} from "../../../cosmos/slashing/v1beta1/slashing";
 import {
   PageRequest,
   PageResponse,
-} from "../../base/query/v1beta1/pagination";
+} from "../../../cosmos/base/query/v1beta1/pagination";
 
 export const protobufPackage = "cosmos.slashing.v1beta1";
 

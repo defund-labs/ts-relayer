@@ -1,6 +1,6 @@
 /* eslint-disable */
 import { Reader, Writer } from "protobufjs/minimal";
-import { ParamChange } from "./params";
+import { ParamChange } from "../../../cosmos/params/v1beta1/params";
 
 export const protobufPackage = "cosmos.params.v1beta1";
 

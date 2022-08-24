@@ -5,11 +5,11 @@ import {
   Channel,
   IdentifiedChannel,
   PacketState,
-} from "./channel";
+} from "../../../../ibc/core/channel/v1/channel";
 import {
   Height,
   IdentifiedClientState,
-} from "../../client/v1/client";
+} from "../../../../ibc/core/client/v1/client";
 import {
   PageRequest,
   PageResponse,
@@ -3543,7 +3543,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

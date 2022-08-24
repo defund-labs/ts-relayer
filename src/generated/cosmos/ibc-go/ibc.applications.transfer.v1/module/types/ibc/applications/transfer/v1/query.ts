@@ -3,7 +3,7 @@ import { Reader, Writer } from "protobufjs/minimal";
 import {
   DenomTrace,
   Params,
-} from "./transfer";
+} from "../../../../ibc/applications/transfer/v1/transfer";
 import {
   PageRequest,
   PageResponse,

@@ -4,7 +4,7 @@ import {
   Counterparty,
   orderFromJSON,
   orderToJSON,
-} from "../../channel/v1/channel";
+} from "../../../../ibc/core/channel/v1/channel";
 import { Reader, Writer } from "protobufjs/minimal";
 
 export const protobufPackage = "ibc.core.port.v1";

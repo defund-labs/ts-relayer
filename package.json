@@ -26,7 +26,8 @@
     "cov:lcov": "nyc report --reporter=lcov",
     "cov:send": "run-s cov:lcov && codecov",
     "cov:check": "nyc report && nyc check-coverage --lines 100 --functions 100 --branches 100",
-    "proto": "./scripts/proto/get-proto.sh && ./scripts/proto/define-proto.sh && yarn fix"
+    "proto": "./scripts/proto/get-proto.sh && ./scripts/proto/define-proto.sh && yarn fix",
+    "postinstall": "patch-package"
   },
   "engines": {
     "node": ">=12"
@@ -49,6 +50,7 @@
     "fast-safe-stringify": "2.0.4",
     "js-yaml": "4.0.0",
     "lodash": "4.17.21",
+    "patch-package": "^6.4.7",
     "prom-client": "13.1.0",
     "protobufjs": "^6.10.3",
     "table": "^6.7.1",

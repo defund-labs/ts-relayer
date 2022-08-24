@@ -4,7 +4,7 @@ import { util, configure, Writer, Reader } from "protobufjs/minimal";
 import {
   Params,
   ValidatorSigningInfo,
-} from "./slashing";
+} from "../../../cosmos/slashing/v1beta1/slashing";
 
 export const protobufPackage = "cosmos.slashing.v1beta1";
 
@@ -442,7 +442,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

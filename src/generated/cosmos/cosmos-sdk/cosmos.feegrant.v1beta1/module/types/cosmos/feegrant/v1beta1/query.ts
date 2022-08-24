@@ -1,10 +1,10 @@
 /* eslint-disable */
 import { Reader, Writer } from "protobufjs/minimal";
-import { Grant } from "./feegrant";
+import { Grant } from "../../../cosmos/feegrant/v1beta1/feegrant";
 import {
   PageRequest,
   PageResponse,
-} from "../../base/query/v1beta1/pagination";
+} from "../../../cosmos/base/query/v1beta1/pagination";
 
 export const protobufPackage = "cosmos.feegrant.v1beta1";
 

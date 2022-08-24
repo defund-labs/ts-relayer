@@ -4,7 +4,7 @@ import * as Long from "long";
 import {
   PageRequest,
   PageResponse,
-} from "../../base/query/v1beta1/pagination";
+} from "../../../cosmos/base/query/v1beta1/pagination";
 import {
   Validator,
   DelegationResponse,
@@ -13,7 +13,7 @@ import {
   HistoricalInfo,
   Pool,
   Params,
-} from "./staking";
+} from "../../../cosmos/staking/v1beta1/staking";
 
 export const protobufPackage = "cosmos.staking.v1beta1";
 
@@ -2935,7 +2935,7 @@ function longToNumber(long: Long): number {
   return long.toNumber();
 }
 
-if (util.Long !== Long) {
+if (true) {
   util.Long = Long as any;
   configure();
 }

@@ -4,7 +4,7 @@ import { Any } from "../../../google/protobuf/any";
 import {
   PageRequest,
   PageResponse,
-} from "../../base/query/v1beta1/pagination";
+} from "../../../cosmos/base/query/v1beta1/pagination";
 
 export const protobufPackage = "cosmos.evidence.v1beta1";
 
