@@ -1325,10 +1325,20 @@ export class IbcClient {
       ),
     });
 
-    // prepend the update client message to front of interquery messages
-    msgs.unshift(updateMsg)
+    // sign and send the update client message before we submit the interquery messages
+    var result = await this.sign.signAndBroadcast(
+      senderAddress,
+      [updateMsg],
+      'auto'
+    );
+    if (isDeliverTxFailure(result)) {
+      throw new Error(createDeliverTxFailureMessage(result));
+    }
+    var parsedLogs = logs.parseRawLog(result.rawLog);
+
+    // sign and send the list of interquery messages
     
-    const result = await this.sign.signAndBroadcast(
+    result = await this.sign.signAndBroadcast(
       senderAddress,
       msgs,
       'auto'
@@ -1336,7 +1346,7 @@ export class IbcClient {
     if (isDeliverTxFailure(result)) {
       throw new Error(createDeliverTxFailureMessage(result));
     }
-    const parsedLogs = logs.parseRawLog(result.rawLog);
+    parsedLogs = logs.parseRawLog(result.rawLog);
     return {
       logs: parsedLogs,
       transactionHash: result.transactionHash,
