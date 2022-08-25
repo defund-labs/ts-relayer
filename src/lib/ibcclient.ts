@@ -1336,9 +1336,6 @@ export class IbcClient {
     }
     var parsedLogs = logs.parseRawLog(result.rawLog);
 
-    // pause and wait for client update to be included in the block
-    this.waitOneBlock()
-
     // sign and send the list of interquery messages
     result = await this.sign.signAndBroadcast(
       senderAddress,
