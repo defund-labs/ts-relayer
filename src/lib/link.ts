@@ -775,12 +775,13 @@ export class Link {
     const dstcurHeight = (await dest.client.latestHeader()).height;
     const srccurHeight = (await src.client.latestHeader()).height;
     await this.updateClientToHeight(source, dstcurHeight);
-    await this.updateClientToHeight(sourceB, srccurHeight);
+    const updateHeightSourceB = await this.updateClientToHeight(sourceB, srccurHeight);
 
     const { logs, height } = await src.client.submitInterqueries(
       iqs,
+      src,
       dest,
-      dstcurHeight,
+      updateHeightSourceB.revisionHeight.toNumber(),
     );
     const acks = parseAcksFromLogs(logs);
     return acks.map((ack) => ({ height, ...ack }));

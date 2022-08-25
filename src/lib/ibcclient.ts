@@ -81,6 +81,7 @@ import {
 } from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/tx'
 import { Endpoint } from './endpoint';
 import { Interquery } from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/interquery';
+import { ProofOp } from 'cosmjs-types/tendermint/crypto/proof';
 
 function deepCloneAndMutate<T extends Record<string, unknown>>(
   object: T,
@@ -1249,6 +1250,7 @@ export class IbcClient {
 
   public async submitInterqueries(
     iqs: readonly Interquery[],
+    src: Endpoint,
     dest: Endpoint,
     height: number,
   ): Promise<MsgResult> {
@@ -1257,7 +1259,22 @@ export class IbcClient {
       throw new Error('Must submit at least 1 interquery');
     }
 
+    const { latestHeight } = await src.client.query.ibc.client.stateTm(src.clientID);
+    const header = await dest.client.buildHeader(toIntHeight(latestHeight), dest.client);
+
     const senderAddress = this.senderAddress;
+    const updateMsg = {
+      typeUrl: '/ibc.core.client.v1.MsgUpdateClient',
+      value: MsgUpdateClient.fromPartial({
+        signer: senderAddress,
+        clientId: src.clientID,
+        header: {
+          typeUrl: '/ibc.lightclients.tendermint.v1.Header',
+          value: TendermintHeader.encode(header).finish(),
+        },
+      }),
+    };
+
     const msgs = [];
     for (const i in iqs) {
       const iq = iqs[i];
@@ -1275,7 +1292,9 @@ export class IbcClient {
         prove: true
       })
 
-      const proofRes = dest.client.query.queryRawProof(iq.path.split("/")[2], iq.key, height)
+      const ops = {
+        ops: res.proof?.ops.map(i => { return ProofOp.fromPartial(i) })
+      }
 
       const msg = {
         typeUrl: '/defundhub.defund.query.MsgCreateInterqueryResult',
@@ -1283,8 +1302,8 @@ export class IbcClient {
           creator: senderAddress,
           storeid: iq.storeid,
           data: res.value,
-          height: res.height,
-          proof: (await proofRes).proof,
+          height: height,
+          proof: ops,
         }),
       };
       msgs.push(msg);
@@ -1297,9 +1316,18 @@ export class IbcClient {
               mutableMsg.value.data
             );
           }
+          if (mutableMsg.value.data) {
+            mutableMsg.value.data = toBase64AsAny(
+              mutableMsg.value.data
+            );
+          }
         })
       ),
     });
+
+    // prepend the update client message to front of interquery messages
+    msgs.unshift(updateMsg)
+    
     const result = await this.sign.signAndBroadcast(
       senderAddress,
       msgs,
