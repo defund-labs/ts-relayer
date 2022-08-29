@@ -1261,8 +1261,6 @@ export class IbcClient {
     // sign and send the update client message before we submit the interquery messages
     const updateHeight = await this.doUpdateClient(src.clientID, dest.client)
 
-    console.log("update height: ", updateHeight.revisionHeight.toNumber())
-
     const msgs = [];
     for (const i in iqs) {
       const iq = iqs[i];
