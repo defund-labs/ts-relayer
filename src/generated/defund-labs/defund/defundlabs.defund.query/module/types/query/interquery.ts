@@ -1,8 +1,9 @@
 /* eslint-disable */
 import * as Long from "long";
 import { util, configure, Writer, Reader } from "protobufjs/minimal";
+import { Height } from "../ibc/core/client/v1/client";
 
-export const protobufPackage = "defundhub.defund.query";
+export const protobufPackage = "defundlabs.defund.query";
 
 export interface Interquery {
   storeid: string;
@@ -19,7 +20,10 @@ export interface InterqueryResult {
   storeid: string;
   chainid: string;
   data: Uint8Array;
-  height: number;
+  /** queried chain height on submission */
+  height: Height | undefined;
+  /** querying chain height on submission */
+  localHeight: number;
   success: boolean;
   proved: boolean;
 }
@@ -200,7 +204,7 @@ const baseInterqueryResult: object = {
   creator: "",
   storeid: "",
   chainid: "",
-  height: 0,
+  localHeight: 0,
   success: false,
   proved: false,
 };
@@ -219,14 +223,17 @@ export const InterqueryResult = {
     if (message.data.length !== 0) {
       writer.uint32(34).bytes(message.data);
     }
-    if (message.height !== 0) {
-      writer.uint32(40).uint64(message.height);
+    if (message.height !== undefined) {
+      Height.encode(message.height, writer.uint32(42).fork()).ldelim();
+    }
+    if (message.localHeight !== 0) {
+      writer.uint32(48).uint64(message.localHeight);
     }
     if (message.success === true) {
-      writer.uint32(48).bool(message.success);
+      writer.uint32(56).bool(message.success);
     }
     if (message.proved === true) {
-      writer.uint32(56).bool(message.proved);
+      writer.uint32(64).bool(message.proved);
     }
     return writer;
   },
@@ -251,12 +258,15 @@ export const InterqueryResult = {
           message.data = reader.bytes();
           break;
         case 5:
-          message.height = longToNumber(reader.uint64() as Long);
+          message.height = Height.decode(reader, reader.uint32());
           break;
         case 6:
-          message.success = reader.bool();
+          message.localHeight = longToNumber(reader.uint64() as Long);
           break;
         case 7:
+          message.success = reader.bool();
+          break;
+        case 8:
           message.proved = reader.bool();
           break;
         default:
@@ -288,9 +298,14 @@ export const InterqueryResult = {
       message.data = bytesFromBase64(object.data);
     }
     if (object.height !== undefined && object.height !== null) {
-      message.height = Number(object.height);
+      message.height = Height.fromJSON(object.height);
     } else {
-      message.height = 0;
+      message.height = undefined;
+    }
+    if (object.localHeight !== undefined && object.localHeight !== null) {
+      message.localHeight = Number(object.localHeight);
+    } else {
+      message.localHeight = 0;
     }
     if (object.success !== undefined && object.success !== null) {
       message.success = Boolean(object.success);
@@ -314,7 +329,10 @@ export const InterqueryResult = {
       (obj.data = base64FromBytes(
         message.data !== undefined ? message.data : new Uint8Array()
       ));
-    message.height !== undefined && (obj.height = message.height);
+    message.height !== undefined &&
+      (obj.height = message.height ? Height.toJSON(message.height) : undefined);
+    message.localHeight !== undefined &&
+      (obj.localHeight = message.localHeight);
     message.success !== undefined && (obj.success = message.success);
     message.proved !== undefined && (obj.proved = message.proved);
     return obj;
@@ -343,9 +361,14 @@ export const InterqueryResult = {
       message.data = new Uint8Array();
     }
     if (object.height !== undefined && object.height !== null) {
-      message.height = object.height;
+      message.height = Height.fromPartial(object.height);
     } else {
-      message.height = 0;
+      message.height = undefined;
+    }
+    if (object.localHeight !== undefined && object.localHeight !== null) {
+      message.localHeight = object.localHeight;
+    } else {
+      message.localHeight = 0;
     }
     if (object.success !== undefined && object.success !== null) {
       message.success = object.success;

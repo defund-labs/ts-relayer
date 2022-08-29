@@ -1,7 +1,7 @@
 import { arrayContentEquals } from '@cosmjs/utils';
 import { Order, Packet, State } from 'cosmjs-types/ibc/core/channel/v1/channel';
 import { Height } from 'cosmjs-types/ibc/core/client/v1/client';
-import { Interquery } from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/interquery';
+import { Interquery } from '../generated/defund-labs/defund/defundlabs.defund.query/module/types/query/interquery';
 
 import {
   AckWithMetadata,
@@ -309,7 +309,7 @@ export class Link {
   public async updateClient(sender: Side): Promise<Height> {
     this.logger.info(`Update Client on ${this.otherChain(sender)}`);
     const { src, dest } = this.getEnds(sender);
-    const height = await dest.client.doUpdateClient(dest.clientID, src.client, dest.client);
+    const height = await dest.client.doUpdateClient(dest.clientID, src.client);
     return height;
   }
 
@@ -775,13 +775,12 @@ export class Link {
     const dstcurHeight = (await dest.client.latestHeader()).height;
     const srccurHeight = (await src.client.latestHeader()).height;
     await this.updateClientToHeight(source, dstcurHeight);
-    const updateHeightSourceB = await this.updateClientToHeight(sourceB, srccurHeight);
+    await this.updateClientToHeight(sourceB, srccurHeight);
 
     const { logs, height } = await src.client.submitInterqueries(
       iqs,
       src,
       dest,
-      updateHeightSourceB.revisionHeight.toNumber(),
     );
     const acks = parseAcksFromLogs(logs);
     return acks.map((ack) => ({ height, ...ack }));

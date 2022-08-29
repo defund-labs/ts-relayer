@@ -3,10 +3,10 @@ import {
   Interquery,
   InterqueryResult,
   InterqueryTimeoutResult,
-} from "../query/interquery";
+} from "./interquery";
 import { Writer, Reader } from "protobufjs/minimal";
 
-export const protobufPackage = "defundhub.defund.query";
+export const protobufPackage = "defundlabs.defund.query";
 
 /** GenesisState defines the query module's genesis state. */
 export interface GenesisState {

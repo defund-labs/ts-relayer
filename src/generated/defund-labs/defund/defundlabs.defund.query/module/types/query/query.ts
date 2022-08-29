@@ -4,13 +4,13 @@ import {
   Interquery,
   InterqueryResult,
   InterqueryTimeoutResult,
-} from "../query/interquery";
+} from "./interquery";
 import {
   PageRequest,
   PageResponse,
 } from "../cosmos/base/query/v1beta1/pagination";
 
-export const protobufPackage = "defundhub.defund.query";
+export const protobufPackage = "defundlabs.defund.query";
 
 export interface QueryGetInterqueryRequest {
   storeid: string;
@@ -1095,7 +1095,7 @@ export class QueryClientImpl implements Query {
   ): Promise<QueryGetInterqueryResponse> {
     const data = QueryGetInterqueryRequest.encode(request).finish();
     const promise = this.rpc.request(
-      "defundhub.defund.query.Query",
+      "defundlabs.defund.query.Query",
       "Interquery",
       data
     );
@@ -1109,7 +1109,7 @@ export class QueryClientImpl implements Query {
   ): Promise<QueryAllInterqueryResponse> {
     const data = QueryAllInterqueryRequest.encode(request).finish();
     const promise = this.rpc.request(
-      "defundhub.defund.query.Query",
+      "defundlabs.defund.query.Query",
       "InterqueryAll",
       data
     );
@@ -1123,7 +1123,7 @@ export class QueryClientImpl implements Query {
   ): Promise<QueryGetInterqueryResultResponse> {
     const data = QueryGetInterqueryResultRequest.encode(request).finish();
     const promise = this.rpc.request(
-      "defundhub.defund.query.Query",
+      "defundlabs.defund.query.Query",
       "InterqueryResult",
       data
     );
@@ -1137,7 +1137,7 @@ export class QueryClientImpl implements Query {
   ): Promise<QueryAllInterqueryResultResponse> {
     const data = QueryAllInterqueryResultRequest.encode(request).finish();
     const promise = this.rpc.request(
-      "defundhub.defund.query.Query",
+      "defundlabs.defund.query.Query",
       "InterqueryResultAll",
       data
     );
@@ -1153,7 +1153,7 @@ export class QueryClientImpl implements Query {
       request
     ).finish();
     const promise = this.rpc.request(
-      "defundhub.defund.query.Query",
+      "defundlabs.defund.query.Query",
       "InterqueryTimeoutResult",
       data
     );
@@ -1169,7 +1169,7 @@ export class QueryClientImpl implements Query {
       request
     ).finish();
     const promise = this.rpc.request(
-      "defundhub.defund.query.Query",
+      "defundlabs.defund.query.Query",
       "InterqueryTimeoutResultAll",
       data
     );

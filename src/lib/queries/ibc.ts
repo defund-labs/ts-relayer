@@ -54,9 +54,9 @@ import { PageRequest } from '../../generated/cosmos/cosmos-sdk/cosmos.base.tende
 import { 
   QueryClientImpl as InterqueryQuery,
   QueryAllInterqueryResponse,
-} from '../../generated/defund-labs/defund/defundhub.defund.query/module/types/query/query';
+} from '../../generated/defund-labs/defund/defundlabs.defund.query/module/types/query/query';
 
-import { Interquery } from '../../generated/defund-labs/defund/defundhub.defund.query/module/types/query/interquery';
+import { Interquery } from '../../generated/defund-labs/defund/defundlabs.defund.query/module/types/query/interquery';
 
 function decodeTendermintClientStateAny(
   clientState: Any | undefined

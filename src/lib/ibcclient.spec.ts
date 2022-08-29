@@ -65,7 +65,7 @@ test.serial('create and update wasmd client on gaia', async (t) => {
   for (let i = 0; i < 10; i++) {
     await src.waitOneBlock();
   }
-  const newHeader = await src.buildHeader(header.height, dest);
+  const newHeader = await src.buildHeader(header.height);
   const newHeight = newHeader.signedHeader?.header?.height;
   t.not(newHeight?.toNumber(), header.height);
 
@@ -187,7 +187,7 @@ test.serial('transfer message and send packets', async (t) => {
   // base the proof sequence on prepareChannelHandshake
   // update client on dest
   await nodeA.waitOneBlock();
-  const headerHeight = await nodeB.doUpdateClient(link.endB.clientID, nodeA, nodeB);
+  const headerHeight = await nodeB.doUpdateClient(link.endB.clientID, nodeA);
   const proof = await nodeA.getPacketProof(packet, headerHeight);
 
   const relayResult = await nodeB.receivePacket(packet, proof, headerHeight);
@@ -206,7 +206,7 @@ test.serial('transfer message and send packets', async (t) => {
 
   // get an ack proof and return to node A
   await nodeB.waitOneBlock();
-  const ackHeaderHeight = await nodeA.doUpdateClient(link.endA.clientID, nodeB, nodeA);
+  const ackHeaderHeight = await nodeA.doUpdateClient(link.endA.clientID, nodeB);
   const ackProof = await nodeB.getAckProof(ack, ackHeaderHeight);
   await nodeA.acknowledgePacket(ack, ackProof, ackHeaderHeight);
   // Do we need to check the result? or just see the tx succeeded?
@@ -281,7 +281,7 @@ test.serial('tests parsing with multi-message', async (t) => {
 
   // post them to the other side
   await nodeA.waitOneBlock();
-  const headerHeight = await nodeB.doUpdateClient(link.endB.clientID, nodeA, nodeB);
+  const headerHeight = await nodeB.doUpdateClient(link.endB.clientID, nodeA);
   const proofs = await Promise.all(
     multiPackets.map((packet) => nodeA.getPacketProof(packet, headerHeight))
   );
@@ -300,7 +300,7 @@ test.serial('tests parsing with multi-message', async (t) => {
 
   // relay them together
   await nodeB.waitOneBlock();
-  const ackHeaderHeight = await nodeA.doUpdateClient(link.endA.clientID, nodeB, nodeA);
+  const ackHeaderHeight = await nodeA.doUpdateClient(link.endA.clientID, nodeB,);
   const ackProofs = await Promise.all(
     relayAcks.map((ack) => nodeB.getAckProof(ack, ackHeaderHeight))
   );

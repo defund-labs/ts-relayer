@@ -1,9 +1,10 @@
 /* eslint-disable */
 import { Reader, util, configure, Writer } from "protobufjs/minimal";
 import * as Long from "long";
+import { Height } from "../ibc/core/client/v1/client";
 import { ProofOps } from "../tendermint/crypto/proof";
 
-export const protobufPackage = "defundhub.defund.query";
+export const protobufPackage = "defundlabs.defund.query";
 
 export interface MsgCreateInterquery {
   creator: string;
@@ -21,7 +22,7 @@ export interface MsgCreateInterqueryResult {
   creator: string;
   storeid: string;
   data: Uint8Array;
-  height: number;
+  height: Height | undefined;
   proof: ProofOps | undefined;
 }
 
@@ -257,11 +258,7 @@ export const MsgCreateInterqueryResponse = {
   },
 };
 
-const baseMsgCreateInterqueryResult: object = {
-  creator: "",
-  storeid: "",
-  height: 0,
-};
+const baseMsgCreateInterqueryResult: object = { creator: "", storeid: "" };
 
 export const MsgCreateInterqueryResult = {
   encode(
@@ -277,8 +274,8 @@ export const MsgCreateInterqueryResult = {
     if (message.data.length !== 0) {
       writer.uint32(26).bytes(message.data);
     }
-    if (message.height !== 0) {
-      writer.uint32(32).uint64(message.height);
+    if (message.height !== undefined) {
+      Height.encode(message.height, writer.uint32(34).fork()).ldelim();
     }
     if (message.proof !== undefined) {
       ProofOps.encode(message.proof, writer.uint32(42).fork()).ldelim();
@@ -308,7 +305,7 @@ export const MsgCreateInterqueryResult = {
           message.data = reader.bytes();
           break;
         case 4:
-          message.height = longToNumber(reader.uint64() as Long);
+          message.height = Height.decode(reader, reader.uint32());
           break;
         case 5:
           message.proof = ProofOps.decode(reader, reader.uint32());
@@ -339,9 +336,9 @@ export const MsgCreateInterqueryResult = {
       message.data = bytesFromBase64(object.data);
     }
     if (object.height !== undefined && object.height !== null) {
-      message.height = Number(object.height);
+      message.height = Height.fromJSON(object.height);
     } else {
-      message.height = 0;
+      message.height = undefined;
     }
     if (object.proof !== undefined && object.proof !== null) {
       message.proof = ProofOps.fromJSON(object.proof);
@@ -359,7 +356,8 @@ export const MsgCreateInterqueryResult = {
       (obj.data = base64FromBytes(
         message.data !== undefined ? message.data : new Uint8Array()
       ));
-    message.height !== undefined && (obj.height = message.height);
+    message.height !== undefined &&
+      (obj.height = message.height ? Height.toJSON(message.height) : undefined);
     message.proof !== undefined &&
       (obj.proof = message.proof ? ProofOps.toJSON(message.proof) : undefined);
     return obj;
@@ -387,9 +385,9 @@ export const MsgCreateInterqueryResult = {
       message.data = new Uint8Array();
     }
     if (object.height !== undefined && object.height !== null) {
-      message.height = object.height;
+      message.height = Height.fromPartial(object.height);
     } else {
-      message.height = 0;
+      message.height = undefined;
     }
     if (object.proof !== undefined && object.proof !== null) {
       message.proof = ProofOps.fromPartial(object.proof);
@@ -636,7 +634,7 @@ export class MsgClientImpl implements Msg {
   ): Promise<MsgCreateInterqueryResponse> {
     const data = MsgCreateInterquery.encode(request).finish();
     const promise = this.rpc.request(
-      "defundhub.defund.query.Msg",
+      "defundlabs.defund.query.Msg",
       "CreateInterquery",
       data
     );
@@ -650,7 +648,7 @@ export class MsgClientImpl implements Msg {
   ): Promise<MsgCreateInterqueryResultResponse> {
     const data = MsgCreateInterqueryResult.encode(request).finish();
     const promise = this.rpc.request(
-      "defundhub.defund.query.Msg",
+      "defundlabs.defund.query.Msg",
       "CreateInterqueryResult",
       data
     );
@@ -664,7 +662,7 @@ export class MsgClientImpl implements Msg {
   ): Promise<MsgCreateInterqueryTimeoutResponse> {
     const data = MsgCreateInterqueryTimeout.encode(request).finish();
     const promise = this.rpc.request(
-      "defundhub.defund.query.Msg",
+      "defundlabs.defund.query.Msg",
       "CreateInterqueryTimeout",
       data
     );

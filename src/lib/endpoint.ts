@@ -2,7 +2,7 @@ import { toHex } from '@cosmjs/encoding';
 import { logs } from '@cosmjs/stargate';
 import { tendermint34 } from '@cosmjs/tendermint-rpc';
 import { Packet } from 'cosmjs-types/ibc/core/channel/v1/channel';
-import { Interquery } from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/interquery';
+import { Interquery } from '../generated/defund-labs/defund/defundlabs.defund.query/module/types/query/interquery';
 
 import { IbcClient } from './ibcclient';
 import {

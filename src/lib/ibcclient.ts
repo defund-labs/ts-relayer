@@ -78,9 +78,9 @@ import {
 
 import {
   MsgCreateInterqueryResult
-} from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/tx'
+} from '../generated/defund-labs/defund/defundlabs.defund.query/module/types/query/tx'
 import { Endpoint } from './endpoint';
-import { Interquery } from '../generated/defund-labs/defund/defundhub.defund.query/module/types/query/interquery';
+import { Interquery } from '../generated/defund-labs/defund/defundlabs.defund.query/module/types/query/interquery';
 import { ProofOp } from 'cosmjs-types/tendermint/crypto/proof';
 
 function deepCloneAndMutate<T extends Record<string, unknown>>(
@@ -136,7 +136,7 @@ function ibcRegistry(): Registry {
     ['/ibc.core.channel.v1.MsgAcknowledgement', MsgAcknowledgement],
     ['/ibc.core.channel.v1.MsgTimeout', MsgTimeout],
     ['/ibc.applications.transfer.v1.MsgTransfer', MsgTransfer],
-    ['/defundhub.defund.query.MsgCreateInterqueryResult', MsgCreateInterqueryResult],
+    ['/defundlabs.defund.query.MsgCreateInterqueryResult', MsgCreateInterqueryResult],
   ]);
 }
 
@@ -442,8 +442,8 @@ export class IbcClient {
   //
   // For the vote sign bytes, it checks (from the commit):
   //   Height, Round, BlockId, TimeStamp, ChainID
-  public async buildHeader(lastHeight: number, source: IbcClient): Promise<TendermintHeader> {
-    const signedHeader = await source.getSignedHeader();
+  public async buildHeader(lastHeight: number): Promise<TendermintHeader> {
+    const signedHeader = await this.getSignedHeader();
     // "assert that trustedVals is NextValidators of last trusted header"
     // https://github.com/cosmos/cosmos-sdk/blob/v0.41.0/x/ibc/light-clients/07-tendermint/types/update.go#L74
     const validatorHeight = lastHeight + 1;
@@ -451,9 +451,9 @@ export class IbcClient {
     const curHeight = signedHeader.header!.height.toNumber();
     return TendermintHeader.fromPartial({
       signedHeader,
-      validatorSet: await source.getValidatorSet(curHeight),
-      trustedHeight: source.revisionHeight(lastHeight),
-      trustedValidators: await source.getValidatorSet(validatorHeight),
+      validatorSet: await this.getValidatorSet(curHeight),
+      trustedHeight: this.revisionHeight(lastHeight),
+      trustedValidators: await this.getValidatorSet(validatorHeight),
     });
   }
 
@@ -594,16 +594,14 @@ export class IbcClient {
   // Returns the height that was updated to.
   public async doUpdateClient(
     clientId: string,
-    src: IbcClient,
-    dest: IbcClient,
+    src: IbcClient
   ): Promise<Height> {
-    const { latestHeight } = await dest.query.ibc.client.stateTm(clientId);
-    const header = await src.buildHeader(toIntHeight(latestHeight), src);
-    await dest.updateTendermintClient(clientId, header);
+    const { latestHeight } = await this.query.ibc.client.stateTm(clientId);
+    const header = await src.buildHeader(toIntHeight(latestHeight));
+    await this.updateTendermintClient(clientId, header);
     const height = header.signedHeader?.header?.height?.toNumber() ?? 0;
-    return dest.revisionHeight(height);
+    return src.revisionHeight(height);
   }
-
   /***** These are all direct wrappers around message constructors ********/
 
   public async sendTokens(
@@ -1252,28 +1250,18 @@ export class IbcClient {
     iqs: readonly Interquery[],
     src: Endpoint,
     dest: Endpoint,
-    height: number,
   ): Promise<MsgResult> {
     this.logger.verbose(`Submitting ${iqs.length} interqueries..`);
     if (iqs.length === 0) {
       throw new Error('Must submit at least 1 interquery');
     }
 
-    const { latestHeight } = await src.client.query.ibc.client.stateTm(src.clientID);
-    const header = await dest.client.buildHeader(toIntHeight(latestHeight), dest.client);
-
     const senderAddress = this.senderAddress;
-    const updateMsg = {
-      typeUrl: '/ibc.core.client.v1.MsgUpdateClient',
-      value: MsgUpdateClient.fromPartial({
-        signer: senderAddress,
-        clientId: src.clientID,
-        header: {
-          typeUrl: '/ibc.lightclients.tendermint.v1.Header',
-          value: TendermintHeader.encode(header).finish(),
-        },
-      }),
-    };
+
+    // sign and send the update client message before we submit the interquery messages
+    const updateHeight = await this.doUpdateClient(src.clientID, dest.client)
+
+    console.log("update height: ", updateHeight.revisionHeight.toNumber())
 
     const msgs = [];
     for (const i in iqs) {
@@ -1288,7 +1276,7 @@ export class IbcClient {
       const res = await dest.client.tm.abciQuery({
         path: iq.path,
         data: iq.key,
-        height: height,
+        height: updateHeight.revisionHeight.toNumber() - 1,
         prove: true
       })
 
@@ -1297,12 +1285,15 @@ export class IbcClient {
       }
 
       const msg = {
-        typeUrl: '/defundhub.defund.query.MsgCreateInterqueryResult',
+        typeUrl: '/defundlabs.defund.query.MsgCreateInterqueryResult',
         value: MsgCreateInterqueryResult.fromPartial({
           creator: senderAddress,
           storeid: iq.storeid,
           data: res.value,
-          height: height,
+          height: {
+            revision_height: updateHeight.revisionHeight.toNumber(),
+            revision_number: updateHeight.revisionNumber.toNumber()
+          },
           proof: ops,
         }),
       };
@@ -1325,19 +1316,8 @@ export class IbcClient {
       ),
     });
 
-    // sign and send the update client message before we submit the interquery messages
-    var result = await this.sign.signAndBroadcast(
-      senderAddress,
-      [updateMsg],
-      'auto'
-    );
-    if (isDeliverTxFailure(result)) {
-      throw new Error(createDeliverTxFailureMessage(result));
-    }
-    var parsedLogs = logs.parseRawLog(result.rawLog);
-
     // sign and send the list of interquery messages
-    result = await this.sign.signAndBroadcast(
+    const result = await this.sign.signAndBroadcast(
       senderAddress,
       msgs,
       'auto'
@@ -1345,7 +1325,7 @@ export class IbcClient {
     if (isDeliverTxFailure(result)) {
       throw new Error(createDeliverTxFailureMessage(result));
     }
-    parsedLogs = logs.parseRawLog(result.rawLog);
+    const parsedLogs = logs.parseRawLog(result.rawLog);
     return {
       logs: parsedLogs,
       transactionHash: result.transactionHash,
@@ -1587,7 +1567,7 @@ export async function prepareConnectionHandshake(
   // ensure the last transaction was committed to the header (one block after it was included)
   await src.waitOneBlock();
   // update client on dest
-  const headerHeight = await dest.doUpdateClient(clientIdDest, src, dest);
+  const headerHeight = await dest.doUpdateClient(clientIdDest, src);
 
   // get a proof (for the proven height)
   const proof = await src.getConnectionProof(
@@ -1608,7 +1588,7 @@ export async function prepareChannelHandshake(
   // ensure the last transaction was committed to the header (one block after it was included)
   await src.waitOneBlock();
   // update client on dest
-  const headerHeight = await dest.doUpdateClient(clientIdDest, src, dest);
+  const headerHeight = await dest.doUpdateClient(clientIdDest, src);
   // get a proof (for the proven height)
   const proof = await src.getChannelProof({ portId, channelId }, headerHeight);
   return proof;
