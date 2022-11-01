@@ -174,7 +174,7 @@ export function buildClientState(
       seconds: Long.fromNumber(trustPeriodSec),
     },
     maxClockDrift: {
-      seconds: Long.fromNumber(20),
+      seconds: Long.fromNumber(600),
     },
     latestHeight: height,
     proofSpecs: [iavlSpec, tendermintSpec],

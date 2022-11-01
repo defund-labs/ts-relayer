@@ -1287,7 +1287,7 @@ export class IbcClient {
         value: MsgCreateInterqueryResult.fromPartial({
           creator: senderAddress,
           storeid: iq.storeid,
-          data: res.value,
+          data: Buffer.from(res.value).toString("base64"),
           height: {
             revision_height: updateHeight.revisionHeight.toNumber(),
             revision_number: updateHeight.revisionNumber.toNumber()
@@ -1301,14 +1301,7 @@ export class IbcClient {
       msgs: msgs.map((msg) =>
         deepCloneAndMutate(msg, (mutableMsg) => {
           if (mutableMsg.value.data) {
-            mutableMsg.value.data = toBase64AsAny(
               mutableMsg.value.data
-            );
-          }
-          if (mutableMsg.value.data) {
-            mutableMsg.value.data = toBase64AsAny(
-              mutableMsg.value.data
-            );
           }
         })
       ),
