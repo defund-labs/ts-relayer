@@ -536,7 +536,7 @@ export class Link {
     await Promise.all([
       this.relayPackets('A', submitA),
       this.relayPackets('B', submitB),
-      this.relayInterqueries('A', 'B', iqs),
+      this.relayInterqueries('A', iqs),
     ]);
 
     // let's wait a bit to ensure our newly committed acks are indexed
@@ -757,7 +757,6 @@ export class Link {
   // Returns all the queries that are associated with the just submitted interqueries
   public async relayInterqueries(
     source: Side,
-    sourceB: Side,
     iqs: readonly Interquery[]
   ): Promise<AckWithMetadata[]> {
     this.logger.info(
@@ -771,11 +770,6 @@ export class Link {
       return [];
     }
     const { src, dest } = this.getEnds(source);
-
-    const dstcurHeight = (await dest.client.latestHeader()).height;
-    const srccurHeight = (await src.client.latestHeader()).height;
-    await this.updateClientToHeight(source, dstcurHeight);
-    await this.updateClientToHeight(sourceB, srccurHeight);
 
     const { logs, height } = await src.client.submitInterqueries(
       iqs,
